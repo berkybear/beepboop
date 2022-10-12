@@ -47,7 +47,7 @@ async def get_stock():
 
     urls = {
         # GPUs
-        f"4090-={newegg_base_url}100007709%20601408872&Tpk=rtx+4090&PageSize=96&t-{t}",
+        f"4090-={newegg_base_url}100007709%20601408872%208000&Tpk=rtx+4090&PageSize=96&t-{t}",        
         f"4090-={bh_base_url}{bh_rtx_model_stub.substitute(Model='4090')}&t={t}",
         # f"4090-={bestbuy_base_url}&{bestbuy_rtx_model_stub.substitute(Model='4090')}&t={t}", #CAN'T PARSE THE PAGE FOR PRICE SO COMMENTING OUT FOR NOW
 
@@ -87,17 +87,25 @@ async def get_stock():
 # Determine whether or not to parse Best Buy or NewEgg.
 async def parse_url(s, url, model):
     if "bestbuy" in url:
+        print(f"Parse Best Buy: {url}")
         await parse_bestbuy_url(s, url, model)
+        print("-----------------------------------")
     if "newegg" in url:
+        print(f"Parse NewEgg: {url}")
         await parse_newegg_url(s, url, model)
+        print("-----------------------------------")
     if "bhphotovideo" in url:
+        print(f"Parse B&H: {url}")
         await parse_bh_url(s, url, model)
+        print("-----------------------------------")
     if "amd" in url:
+        print(f"Parse AMD: {url}")
         await parse_amd_url(s, url, model)
+        print("-----------------------------------")
 
 
 async def parse_bestbuy_url(s, url, model):
-    print(url)
+    
     headers = {
         "Authority": "www.bestbuy.com",
         "Method": "GET",
@@ -136,6 +144,7 @@ async def parse_bestbuy_url(s, url, model):
 
 
 async def parse_newegg_url(s, url, model):
+    
     headers = {
         "Authority": "www.newegg.com",
         "Method": "GET",
@@ -156,22 +165,22 @@ async def parse_newegg_url(s, url, model):
         "Referer": "https://www.google.com/"
     }
     r = await s.get(url, headers=headers)
-    items = r.html.find('.item-cell')
+    if r.html is not None:
+        items = r.html.find('.item-cell')
+        for item in items:        
+            item = Item.create_from_newegg(item, model)        
+            if item is not None:
+                item_id = item.get_item_id()
+                if item_id in item_set.keys():
+                    if item_set[item_id].get_button_text() != item.get_button_text():
+                        original_text = item_set[item_id].get_button_text()
+                        if item.is_in_stock():
+                            notify_difference(item, original_text)
 
-    for item in items:
-        item = Item.create_from_newegg(item, model)
-
-        if item is not None:
-            item_id = item.get_item_id()
-            if item_id in item_set.keys():
-                if item_set[item_id].get_button_text() != item.get_button_text():
-                    original_text = item_set[item_id].get_button_text()
-                    if item.is_in_stock():
-                        notify_difference(item, original_text)
-
-            item_set[item_id] = item
+                item_set[item_id] = item
 
 async def parse_amd_url(s, url, model):
+    
     headers = {
         "Authority": "www.amd.com",
         "Method": "GET",
@@ -201,6 +210,7 @@ async def parse_amd_url(s, url, model):
 
 
 async def parse_bh_url(s, url, model):
+    
     headers = {
         "Authority": "www.bhphotovideo.com",
         "Method": "GET",

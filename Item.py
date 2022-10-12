@@ -82,15 +82,15 @@ class Item:
         return new_item
 
     def create_from_newegg(html, model):        
-        header = html.find('.item-info', first=True)
-        name = html.find('.item-title', first=True)
+        if html is None or model is None:
+            return None
+
+        name = html.find('.item-title', first=True)        
         
         # if "Ryzen" in model:
         #     model = f'{name.text.split("AMD ")[1].split("0X ")[0]}0X'
         price_parent = html.find('.price-current', first=True)
-
         
-
         # NewEgg sometimes displays "sold out" instead of a price. This will
         # get a price if it's shown.
         try:
@@ -105,21 +105,36 @@ class Item:
         except:
             stock_text = "Add to Cart"
 
-        item_url = html.find('.item-container', first=True).find('a', first=True).attrs['href']
+        item_container = html.find('.item-container', first=True)
+        
+        if item_container is None:
+            return None
 
-        item_features = html.find('.item-features', first=True).find('li')
+        item_url = item_container.find('a', first=True).attrs['href']
+        
+        item_features_container = html.find('.item-features', first=True)
+
+        if item_features_container is None:
+            return None
+
+        item_features = item_features_container.find('li')
+        
         for feature in item_features:
-            if "item #" in feature.text.lower():
-                item_id = feature.text.split(": ")[1]
+            if feature is None:
+                continue
+            feature_entry = feature.find('strong', first=True).text
+            if(feature_entry == "Model #:"):
+                item_id = feature.text.split("Model #: ")[1]
                 break
 
         if "item_id" not in locals():
             return None
-
+       
         new_item = Item(model, price, item_id, name.text, item_url, stock_text)
-
+        
         if stock_text != "OUT OF STOCK":           
             print(item_url, price, stock_text)
+        
         
         # Check price. Make sure it's within at least $300 of the FE price.
         if "Unknown" not in price:
