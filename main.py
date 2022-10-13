@@ -22,8 +22,8 @@ def notify_difference(item, original_text):
     print(f"           {time.ctime()}")
     print(f"Button has changed from {original_text} to {item.get_button_text()} for {item.get_name()}.")
     if "newegg" in item.get_url():
-        print(f"Add it to your cart: https://secure.newegg.com/Shopping/AddToCart.aspx?ItemList={item.get_item_id()}&Submit=ADD&target=NEWEGGCART\n\n")        
-        webbrowser.open_new(f"https://secure.newegg.com/Shopping/AddToCart.aspx?ItemList={item.get_item_id()}&Submit=ADD&target=NEWEGGCART")
+        print(f"Add it to your cart: https://secure.newegg.com/Shopping/AddToCart.aspx?ItemList={item.get_item_id()}&Submit=ADD&target=NEWEGGCART\n\n")           
+        # webbrowser.open_new(f"https://secure.newegg.com/Shopping/AddToCart.aspx?ItemList={item.get_item_id()}&Submit=ADD&target=NEWEGGCART")
     print(f"Current price: {item.get_price()}.")
     print(f"Please visit {item.get_url()} for more information.")
     webbrowser.open_new(item.get_url())
@@ -48,7 +48,7 @@ async def get_stock():
     urls = {
         # GPUs
         f"4090-={newegg_base_url}100007709%20601408872%208000&Tpk=rtx+4090&PageSize=96&t-{t}",        
-        f"4090-={bh_base_url}{bh_rtx_model_stub.substitute(Model='4090')}&t={t}",
+        # f"4090-={bh_base_url}{bh_rtx_model_stub.substitute(Model='4090')}&t={t}",
         # f"4090-={bestbuy_base_url}&{bestbuy_rtx_model_stub.substitute(Model='4090')}&t={t}", #CAN'T PARSE THE PAGE FOR PRICE SO COMMENTING OUT FOR NOW
 
         # OLD 30 SERIES AND OTHER STUFF COMMENTED OUT FOR NOW
